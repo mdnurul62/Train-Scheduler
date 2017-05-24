@@ -9,33 +9,36 @@
     storageBucket: "train-scheduler-2f630.appspot.com",
     messagingSenderId: "126962781675"
   };
+
   firebase.initializeApp(config);
 
-  //To create a reference database variable
-  var database = firebase.database();
+	//To create a reference database variable
+  	var database = firebase.database();
 
-  //Initial variables
-  var trainName 	= "Acela";
-  var destination = "DC";
-  var firstTime 	= "00:30";
-  var frequency 	= "1";
 
-//$(document).ready(function() {
-	//Capture input by clicking a button
+	//Initial variables to contain data in form
+  	var trainName 	= "";
+  	var destination = "";
+  	var firstTime 	= "";
+  	var frequency 	= "";
+
+
+	//jQuery on click statement to capture input data by clicking a button with ID "add-train-name" to store data in variables
   	$("#add-train-name").on("click", function(event) {
   		event.preventDefault();
 
-  	//To grab values from text-boxes
+	//To grab values from text-boxes
   	var trainName 	= $("#train-name-input").val().trim();
   	var destination = $("#destination-input").val().trim();
   	var firstTime 	= $("#time-input").val().trim();
   	var frequency 	= $("#frequency-input").val().trim();
-
+	// Create a new variable as object containing sets of property and value
   	var train = {
   		name: trainName,
   		destination: destination,
   		time: firstTime,
-  		frequency: frequency
+  		frequency: frequency,
+  		dateAdded: firebase.database.ServerValue.TIMESTAMP
   	};
 
   	console.log(trainName);
@@ -44,8 +47,8 @@
   	console.log(frequency);
   	//return false;
   	
-  	//Uploading train data to the database
-  	database.ref().set(train);
+	//Uploading train data to the database by using push method to store data everytime in the database
+  	database.ref().push(train);
   		console.log(train.name);
   		console.log(train.destination);
   		console.log(train.time);
@@ -65,11 +68,10 @@
 
   });
 
-  // Firebase watcher + initial loader
-  database.ref().on("value", function(snapshot) {
+  // Firebase watcher + initial loader which is to grab the data and post into user area by using firebase listerner
+  database.ref().on("child_added", function(snapshot) {
   		// Log everything that's coming out of snapshot
   		console.log(snapshot.val());
-
   		var newTrain = snapshot.val();
   		console.log(newTrain);
   		var tFrequency = newTrain.frequency;
@@ -95,8 +97,6 @@
 
         // Next Train
         var nextTrain = moment().add(tMinutesTillTrain, "minutes");
-
-  	$("tbody").html("<tr><td>" + newTrain.name + "</td><td>" + newTrain.destination + "</td><td>" + newTrain.frequency + "</td><td>" + moment(nextTrain).format("hh:mm") + "</td><td>" + tMinutesTillTrain + "</td></tr>");
-
-  });
-
+	//All user input will be posted in the user area
+  	$("tbody").append("<tr><td>" + newTrain.name + "</td><td>" + newTrain.destination + "</td><td>" + newTrain.frequency + "</td><td>" + moment(nextTrain).format("hh:mm") + "</td><td>" + tMinutesTillTrain + "</td></tr>");
+    });
